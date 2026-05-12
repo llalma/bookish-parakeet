@@ -6,9 +6,6 @@ import os
 import sys
 sys.setrecursionlimit(20000)
 
-import time
-
-print(f"New limit: {sys.getrecursionlimit()}")
 
 TIME_LIMIT = 100 # Seconbds
 
@@ -24,7 +21,8 @@ def calc_fib(n: int) -> int:
     Returns:
         int: The Fibonacci number at position n.
     """
-    time.sleep(1)
+    if n <= 1:
+        return n
     return calc_fib(n - 1) + calc_fib(n - 2)
 
 @celery_app.task(soft_time_limit=TIME_LIMIT)
@@ -43,10 +41,7 @@ def process_task(inputs: dict):
     """
     target_number = inputs['target']
     try:
-        if target_number not in [0, 1]:
-            res = calc_fib(target_number)
-        else:
-            res = target_number
+        res = calc_fib(target_number)
         return {
                 "status": "DONE", 
                 "input_number": target_number, 
@@ -61,3 +56,6 @@ def process_task(inputs: dict):
             "error": f"Task took longer than {TIME_LIMIT} seconds and was aborted.",
             "id": str(uuid.uuid4())
         }
+
+if __name__ == "__main__":
+    print(calc_fib(6))
